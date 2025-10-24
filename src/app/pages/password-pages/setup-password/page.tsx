@@ -50,7 +50,7 @@ const SetupPasswordPage = () => {
       }
     } else if (!phoneNumber) {
       setError("Phone number is required");
-    } else if (pin.length !== 6) {
+    } else if (pin.length !== 4) {
       setError("PIN must be exactly 4 digits");
     }
   };
