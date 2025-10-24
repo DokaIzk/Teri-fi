@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 
 const SetupPasswordPage = () => {
   const [pin, setPin] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleInput = (num: string) => {
@@ -15,20 +18,40 @@ const SetupPasswordPage = () => {
     setPin(pin.slice(0, -1));
   };
 
-  const handleContinue = () => {
-    if (pin.length === 4) {
-      localStorage.setItem("setupPin", pin);
-      
-      // Store phone number and pin together for backend submission
-      const phoneNumber = localStorage.getItem("userPhoneNumber");
-      if (phoneNumber) {
-        localStorage.setItem("userCredentials", JSON.stringify({
-          phoneNumber,
-          pin
-        }));
+  const handleContinue = async () => {
+    if (pin.length === 4 && phoneNumber) {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/register`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            phoneNumber,
+            pin,
+          }),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || "Registration failed");
+        }
+        // Registration successful, proceed
+        router.push("/pages/password-pages/confirm-password");
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message || "Something went wrong");
+        } else {
+          setError("Something went wrong");
+        }
+      } finally {
+        setLoading(false);
       }
-
-      router.push("/pages/password-pages/confirm-password");
+    } else if (!phoneNumber) {
+      setError("Phone number is required");
+    } else if (pin.length !== 6) {
+      setError("PIN must be exactly 4 digits");
     }
   };
 
@@ -41,8 +64,18 @@ const SetupPasswordPage = () => {
         </p>
       </div>
 
+      {/* Phone number input */}
+      <input
+        type="tel"
+        placeholder="Enter phone number"
+        value={phoneNumber}
+        onChange={e => setPhoneNumber(e.target.value)}
+        className="mb-4 w-full max-w-xs py-3 px-4 rounded-lg text-black text-lg font-medium"
+        disabled={loading}
+      />
+
       {/* PIN display */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-6">
         {Array(4)
           .fill("")
           .map((_, i) => (
@@ -82,7 +115,7 @@ const SetupPasswordPage = () => {
       </div>
 
       {/* Continue button - shows when PIN is complete */}
-      {pin.length === 4 && (
+      {pin.length === 4 && phoneNumber && (
         <button
           onClick={handleContinue}
           className="mt-8 w-full max-w-xs py-3 bg-sky-500 rounded-lg text-white text-lg font-medium"
@@ -90,6 +123,9 @@ const SetupPasswordPage = () => {
           Continue
         </button>
       )}
+
+      {error && <div className="text-red-500 mt-4">{error}</div>}
+      {loading && <div className="text-gray-400 mt-4">Registering...</div>}
     </div>
   );
 };
