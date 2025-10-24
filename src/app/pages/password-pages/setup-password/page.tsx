@@ -10,6 +10,8 @@ const SetupPasswordPage = () => {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
   const handleInput = (num: string) => {
     if (pin.length < 4) setPin(pin + num);
   };
@@ -23,7 +25,7 @@ const SetupPasswordPage = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/register`, {
+        const response = await fetch(`${backendUrl}/user/register`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -37,7 +39,6 @@ const SetupPasswordPage = () => {
         if (!response.ok) {
           throw new Error(data.message || "Registration failed");
         }
-        // Registration successful, proceed
         router.push("/pages/password-pages/confirm-password");
       } catch (err) {
         if (err instanceof Error) {
@@ -76,7 +77,7 @@ const SetupPasswordPage = () => {
 
       {/* PIN display */}
       <div className="flex gap-2 mb-6">
-        {Array(4)
+        {Array(6)
           .fill("")
           .map((_, i) => (
             <div
@@ -115,16 +116,18 @@ const SetupPasswordPage = () => {
       </div>
 
       {/* Continue button - shows when PIN is complete */}
-      {pin.length === 4 && phoneNumber && (
+      {pin.length === 6 && (
         <button
           onClick={handleContinue}
           className="mt-8 w-full max-w-xs py-3 bg-sky-500 rounded-lg text-white text-lg font-medium"
+          disabled={loading}
         >
-          Continue
+          {loading ? "Loading..." : "Continue"}
         </button>
       )}
 
-      {error && <div className="text-red-500 mt-4">{error}</div>}
+      {/* Error message */}
+      {error && <p className="text-red-500 mt-4">{error}</p>}
       {loading && <div className="text-gray-400 mt-4">Registering...</div>}
     </div>
   );
