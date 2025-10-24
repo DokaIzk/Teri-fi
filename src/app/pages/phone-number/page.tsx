@@ -55,7 +55,7 @@ const PhoneNumberPage = () => {
               type="tel"
               value={phoneNumber}
               onChange={handlePhoneChange}
-              placeholder="e.g 08126273411"
+              placeholder="e.g +2348126273411"
               className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-4 pl-8  mb-[20px] text-white text-lg placeholder-gray-600 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
               autoFocus
             />

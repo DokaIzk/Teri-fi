@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 
 const SetupPasswordPage = () => {
   const [pin, setPin] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -21,7 +20,9 @@ const SetupPasswordPage = () => {
   };
 
   const handleContinue = async () => {
-    if (pin.length === 4 && phoneNumber) {
+    const storedPhoneNumber = typeof window !== 'undefined' ? localStorage.getItem("userPhoneNumber") : null;
+    console.log("Stored Phone Number:", storedPhoneNumber);
+    if (pin.length === 4 && storedPhoneNumber) {
       setLoading(true);
       setError(null);
       try {
@@ -31,7 +32,7 @@ const SetupPasswordPage = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            phoneNumber,
+            phoneNumber: storedPhoneNumber,
             pin,
           }),
         });
@@ -49,7 +50,7 @@ const SetupPasswordPage = () => {
       } finally {
         setLoading(false);
       }
-    } else if (!phoneNumber) {
+    } else if (!storedPhoneNumber) {
       setError("Phone number is required");
     } else if (pin.length !== 4) {
       setError("PIN must be exactly 4 digits");
@@ -64,16 +65,6 @@ const SetupPasswordPage = () => {
           You will use this to log into your account
         </p>
       </div>
-
-      {/* Phone number input */}
-      <input
-        type="tel"
-        placeholder="Enter phone number"
-        value={phoneNumber}
-        onChange={e => setPhoneNumber(e.target.value)}
-        className="mb-4 w-full max-w-xs py-3 px-4 rounded-lg text-black text-lg font-medium"
-        disabled={loading}
-      />
 
       {/* PIN display */}
       <div className="flex gap-2 mb-6">
