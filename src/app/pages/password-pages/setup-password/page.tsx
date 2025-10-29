@@ -26,7 +26,7 @@ const SetupPasswordPage = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`${backendUrl}/user/register`, {
+        const response = await fetch(`${backendUrl}/api/user/register`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -40,6 +40,8 @@ const SetupPasswordPage = () => {
         if (!response.ok) {
           throw new Error(data.message || "Registration failed");
         }
+        // Save PIN temporarily for confirmation
+        localStorage.setItem("setupPin", pin);
         router.push("/pages/password-pages/confirm-password");
       } catch (err) {
         if (err instanceof Error) {
@@ -58,7 +60,15 @@ const SetupPasswordPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center text-center text-white px-8">
+    <div className="w-full min-h-screen bg-black flex flex-col items-center justify-center text-center text-white px-8">
+      {/* Back Button */}
+      <button
+        onClick={() => router.push('/pages/phone-number')}
+        className="absolute top-6 left-6 bg-neutral-800 text-white px-4 py-2 rounded-lg hover:bg-neutral-700"
+        aria-label="Go back"
+      >
+        ← Back
+      </button>
       <div className="text-center mb-8">
         <h1 className="text-2xl font-semibold">Setup your password</h1>
         <p className="text-gray-400 mt-2">
@@ -68,7 +78,7 @@ const SetupPasswordPage = () => {
 
       {/* PIN display */}
       <div className="flex gap-2 mb-6">
-        {Array(6)
+        {Array(4)
           .fill("")
           .map((_, i) => (
             <div
@@ -107,7 +117,7 @@ const SetupPasswordPage = () => {
       </div>
 
       {/* Continue button - shows when PIN is complete */}
-      {pin.length === 6 && (
+      {pin.length === 4 && (
         <button
           onClick={handleContinue}
           className="mt-8 w-full max-w-xs py-3 bg-sky-500 rounded-lg text-white text-lg font-medium"
@@ -119,7 +129,7 @@ const SetupPasswordPage = () => {
 
       {/* Error message */}
       {error && <p className="text-red-500 mt-4">{error}</p>}
-      {loading && <div className="text-gray-400 mt-4">Registering...</div>}
+      {/* {loading && <div className="text-gray-400 mt-4">Registering...</div>} */}
     </div>
   );
 };

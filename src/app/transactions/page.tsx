@@ -1,73 +1,47 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { ArrowUpRight, ArrowDownLeft, ChevronLeft } from "lucide-react";
-import historyImage from "@/public/history.png";
 import { useRouter } from "next/navigation";
 import MainLayout from "@/components/MainLayout";
 
 const TransactionHistory = () => {
-  const [hasTransactions, setHasTransactions] = useState(true);
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-  const transactions = [
-    {
-      id: 1,
-      type: "sent",
-      title: "Sent",
-      status: "Delivered",
-      statusColor: "text-green-500",
-      to: "to: +2349074190892",
-      amount: "-$50",
-      nairaAmount: "₦85,000",
-      date: "Oct 5, 2025",
-    },
-    {
-      id: 2,
-      type: "sent",
-      title: "Sent",
-      status: "Pending",
-      statusColor: "text-yellow-500",
-      to: "to: +2349074190892",
-      amount: "-$50",
-      nairaAmount: "₦85,000",
-      date: "Oct 5, 2025",
-    },
-    {
-      id: 3,
-      type: "received",
-      title: "Received",
-      status: "Success",
-      statusColor: "text-green-500",
-      to: "to: +2349074190892",
-      amount: "-$50",
-      nairaAmount: "₦85,000",
-      date: "Oct 5, 2025",
-    },
-    {
-      id: 4,
-      type: "sent",
-      title: "Sent",
-      status: "Pending",
-      statusColor: "text-yellow-500",
-      to: "to: +2349074190892",
-      amount: "-$50",
-      nairaAmount: "₦85,000",
-      date: "Oct 5, 2025",
-    },
-    {
-      id: 5,
-      type: "sent",
-      title: "Sent",
-      status: "Failed",
-      statusColor: "text-red-500",
-      to: "to: +2349074190892",
-      amount: "-$50",
-      nairaAmount: "₦85,000",
-      date: "Oct 5, 2025",
-    },
-  ];
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      const phoneNumber = typeof window !== 'undefined' ? localStorage.getItem("userPhoneNumber") : null;
+      if (!phoneNumber) return;
+      setLoading(true);
+      setError(null);
+      try {
+        // Fetch user profile to get wallet address
+        const userRes = await fetch(`${backendUrl}/api/user/profile/${phoneNumber}`);
+        const userData = await userRes.json();
+        if (!userRes.ok || !userData.success) {
+          throw new Error(userData.message || "Failed to fetch user profile");
+        }
+        const walletAddress = userData.data.walletAddress;
+        // Fetch transactions
+        const txRes = await fetch(`${backendUrl}/api/wallet/transactions/${walletAddress}`);
+        const txData = await txRes.json();
+        if (!txRes.ok) {
+          throw new Error(txData.message || "Failed to fetch transactions");
+        }
+        setTransactions(txData.transactions || []);
+      } catch (err: any) {
+        setError(err.message || "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTransactions();
+  }, [backendUrl]);
 
   const getStatusIcon = (status: string) => {
     if (status === "Delivered" || status === "Success") {
@@ -115,7 +89,7 @@ const TransactionHistory = () => {
 
   return (
     <MainLayout>
-      <div className=" w-96">
+      <div className="w-96">
         {/* Header */}
         <header className="flex items-center mr-20 gap-4 px-6 py-6 justify-between mr-10 ">
           <button
@@ -128,16 +102,20 @@ const TransactionHistory = () => {
         </header>
 
         {/* Content */}
-        {!hasTransactions ? (
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-12 text-gray-400">Loading...</div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center py-12 text-red-500">{error}</div>
+        ) : transactions.length === 0 ? (
           // Empty State
           <div className="flex flex-col items-center justify-center py-12">
             <div className="mb-6">
               <Image
                 src="/history.png"
                 alt="You have no recent transactions yet"
-                width={160}
-                height={160}
-                className="mx-auto opacity-80"
+                width={300}
+                height={300}
+                className="mx-auto opacity-90"
                 priority
               />
             </div>
@@ -145,7 +123,7 @@ const TransactionHistory = () => {
         ) : (
           // Transactions List
           <div className="px-6 py-6 space-y-3">
-            {transactions.map((transaction) => (
+            {transactions.map((transaction: any) => (
               <div
                 key={transaction.id}
                 onClick={() => router.push(`/transactions/${transaction.id}`)}
@@ -169,7 +147,7 @@ const TransactionHistory = () => {
                         {transaction.title}
                       </span>
                       <span
-                        className={`text-xs ${transaction.statusColor} flex items-center gap-1`}
+                        className={`text-xs flex items-center gap-1`}
                       >
                         {getStatusIcon(transaction.status)}
                         {transaction.status}

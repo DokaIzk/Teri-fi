@@ -24,7 +24,7 @@ export default function BottomNav() {
             <button
               key={path}
               onClick={() => router.push(path)}
-              className={`flex flex-col items-center gap-1 ${
+              className={`flex flex-col items-center gap-1 cursor-pointer ${
                 isActive ? "text-cyan-500" : "text-gray-500 hover:text-cyan-500"
               }`}
             >

@@ -25,7 +25,7 @@ const GetStartedPage = () => {
 
       <button
         onClick={() => router.push("/pages/phone-number")}
-        className="mt-8 w-full max-w-xs py-3 bg-sky-500 rounded-lg text-white text-lg font-medium"
+        className="mt-8 w-full max-w-xs py-3 bg-sky-500 rounded-lg text-white text-lg font-medium cursor-pointer"
       >
         Get Started
       </button>

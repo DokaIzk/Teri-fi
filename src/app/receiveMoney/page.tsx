@@ -2,9 +2,30 @@
 
 import { ChevronLeft, Copy, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function ReceivePage() {
   const router = useRouter();
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [walletAddress, setWalletAddress] = useState("");
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const storedPhone = typeof window !== 'undefined' ? localStorage.getItem("userPhoneNumber") : null;
+      if (storedPhone) setPhoneNumber(storedPhone);
+      if (storedPhone && backendUrl) {
+        try {
+          const res = await fetch(`${backendUrl}/api/user/profile/${storedPhone}`);
+          const data = await res.json();
+          if (res.ok && data.success) {
+            setWalletAddress(data.data.walletAddress);
+          }
+        } catch {}
+      }
+    };
+    fetchUserData();
+  }, [backendUrl]);
 
   return (
     <div className="min-h-screen bg-black text-white px-6 py-8 w-95">
@@ -12,7 +33,7 @@ export default function ReceivePage() {
       <header className="flex items-center mr-23 gap-4 px-6 py-6 justify-between mb-8">
         <button
           onClick={() => router.back()}
-          className="text-gray-300 hover:text-white"
+          className="text-gray-300 hover:text-white cursor-pointer"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
@@ -27,18 +48,18 @@ export default function ReceivePage() {
           </div>
           <div>
             <p className="text-sm font-medium text-white">Share phone number</p>
-            <p className="text-xs text-gray-400">+234 0000 000 0000</p>
+            <p className="text-xs text-gray-400">{phoneNumber || "-"}</p>
           </div>
         </div>
         <Copy className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" />
       </div>
 
       {/* Copy Wallet Address */}
-      <div className="bg-gray-900 rounded-2xl p-4 flex items-center justify-between mb-6 border border-gray-800">
+      <div className="bg-gray-900 rounded-2xl p-4 flex items-center justify-between mb-12 border border-gray-800">
         <div>
           <p className="text-sm font-medium text-white">Copy wallet address</p>
           <p className="text-xs text-gray-400 break-all">
-            0x742d35Cc6634C0532925a3b844Bc9e75f0bEb4
+            {walletAddress || "-"}
           </p>
         </div>
         <Copy className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" />

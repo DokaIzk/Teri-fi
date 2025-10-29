@@ -76,8 +76,8 @@ const PhoneNumberPage = () => {
           onClick={handleContinue}
           disabled={phoneNumber.length < 10}
           className={`w-full py-3 rounded-lg text-white text-lg font-medium transition-all ${
-            phoneNumber.length >= 10
-              ? "bg-sky-500 hover:bg-sky-600 active:bg-sky-700"
+            phoneNumber.length > 10
+              ? "bg-sky-500 hover:bg-sky-600 active:bg-sky-700 cursor-pointer"
               : "bg-neutral-800 text-gray-600 cursor-not-allowed"
           }`}
         >

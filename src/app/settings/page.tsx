@@ -43,7 +43,7 @@ export default function SettingsPage() {
         <header className="flex items-center mr-23 gap-4 px-6 py-6 justify-between mb-4">
           <button
             onClick={() => router.back()}
-            className="text-gray-300 hover:text-white"
+            className="text-gray-300 hover:text-white cursor-pointer"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
